@@ -1,25 +1,23 @@
 var express = require("express");
-var logger = require("morgan");
 var mongoose = require("mongoose");
 
-// Our scraping tools
-// Axios is a promised-based http library, similar to jQuery's Ajax method
-// It works on the client and on the server
+// Scraping tools
 var axios = require("axios");
 var cheerio = require("cheerio");
 
 // Require all models
 var db = require("./models");
 
-var PORT = 3000;
+var PORT = process.env.PORT || 3000;
 
 // Initialize Express
 var app = express();
 
+// Set the view engine to ejs
+app.set('view engine', 'ejs');
+
 // Configure middleware
 
-// Use morgan logger for logging requests
-app.use(logger("dev"));
 // Parse request body as JSON
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -27,29 +25,30 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // Connect to the Mongo DB
-mongoose.connect("mongodb://localhost/unit18Populater", { useNewUrlParser: true });
+// If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+
+mongoose.connect(MONGODB_URI);
 
 // Routes
 
 // A GET route for scraping the echoJS website
-app.get("/scrape", function(req, res) {
+app.get("/", function(req, res) {
   // First, we grab the body of the html with axios
-  axios.get("http://www.echojs.com/").then(function(response) {
+  axios.get("https://www.reddit.com/r/pokemongo/").then(function(response) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(response.data);
 
-    // Now, we grab every h2 within an article tag, and do the following:
-    $("article h2").each(function(i, element) {
+    // Now, we grab every a within a span tag, and do the following:
+    $("span a").each(function(i, element) {
       // Save an empty result object
       var result = {};
 
       // Add the text and href of every link, and save them as properties of the result object
       result.title = $(this)
-        .children("a")
+        .children("h2")
         .text();
-      result.link = $(this)
-        .children("a")
-        .attr("href");
+      result.link = "https://www.reddit.com/" + $(this).attr("href");
 
       // Create a new Article using the `result` object built from scraping
       db.Article.create(result)
@@ -63,10 +62,15 @@ app.get("/scrape", function(req, res) {
         });
     });
 
-    // Send a message to the client
-    res.send("Scrape Complete");
+    // Redirect to index
+    res.redirect("/index");
   });
 });
+
+app.get("/index", function(req, res) {
+  res.render("index.ejs");
+});
+
 
 // Route for getting all Articles from the db
 app.get("/articles", function(req, res) {
