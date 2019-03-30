@@ -1,0 +1,26 @@
+{
+  "name": "web-scraping",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EFerri222/Web-Scraping.git"
+  },
+  "author": "Erik Ferri",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EFerri222/Web-Scraping/issues"
+  },
+  "homepage": "https://github.com/EFerri222/Web-Scraping#readme",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "cheerio": "^1.0.0-rc.2",
+    "ejs": "^2.6.1",
+    "express": "^4.16.4",
+    "mongoose": "^5.4.20"
+  }
+}
